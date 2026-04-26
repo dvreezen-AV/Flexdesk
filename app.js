@@ -13,6 +13,8 @@ const DESK_POSITIONS = [
   { left: 76.2, top: 67.1 },
   { left: 84.3, top: 67.1 },
 ];
+const UNAVAILABLE_UNTIL = "2026-08-01";
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 1", "Desk 2", "Desk 3", "Desk 4"]);
 
 const state = {
   selectedDate: "",
@@ -67,15 +69,28 @@ function getReservation(deskId) {
   return getDayReservations()[deskId] || null;
 }
 
+function isTemporarilyUnavailable(deskId) {
+  return TEMPORARILY_UNAVAILABLE_DESKS.has(deskId) && state.selectedDate < UNAVAILABLE_UNTIL;
+}
+
 function selectDesk(deskId) {
   state.selectedDesk = deskId;
   const reservation = getReservation(deskId);
+  const unavailable = isTemporarilyUnavailable(deskId);
 
   els.selectedLabel.textContent = deskId;
   els.deskId.value = deskId;
-  els.reserveButton.disabled = Boolean(reservation);
-  els.formTitle.textContent = reservation ? `${deskId} is reserved` : `Reserve ${deskId}`;
-  els.formHelper.textContent = reservation ? "Current booking." : "Reservation details.";
+  els.reserveButton.disabled = Boolean(reservation) || unavailable;
+  els.formTitle.textContent = reservation
+    ? `${deskId} is reserved`
+    : unavailable
+      ? `${deskId} is unavailable`
+      : `Reserve ${deskId}`;
+  els.formHelper.textContent = unavailable
+    ? "Available again from 1 August."
+    : reservation
+      ? "Current booking."
+      : "Reservation details.";
 
   if (reservation) {
     els.detailName.textContent = reservation.name;
@@ -114,6 +129,7 @@ async function loadDayReservations() {
 function renderDesk(deskNumber) {
   const deskId = `Desk ${deskNumber}`;
   const reservation = getReservation(deskId);
+  const unavailable = isTemporarilyUnavailable(deskId);
   const isSelected = state.selectedDesk === deskId;
   const button = document.createElement("button");
 
@@ -121,6 +137,7 @@ function renderDesk(deskNumber) {
   button.className = [
     "desk",
     reservation ? "is-reserved" : "",
+    unavailable ? "is-unavailable" : "",
     isSelected ? "is-selected" : "",
   ]
     .filter(Boolean)
@@ -130,7 +147,9 @@ function renderDesk(deskNumber) {
   button.setAttribute("role", "listitem");
   button.setAttribute(
     "aria-label",
-    reservation
+    unavailable
+      ? `${deskId}, unavailable until 1 August`
+      : reservation
       ? `${deskId}, reserved by ${reservation.name}`
       : `${deskId}, available`
   );
@@ -139,7 +158,7 @@ function renderDesk(deskNumber) {
   button.innerHTML = `
     <span class="desk-number">${deskNumber}</span>
     ${reservation ? `<span class="desk-person">${escapeHtml(reservation.name)}</span>` : ""}
-    <span class="desk-status">${reservation ? "Reserved" : "Available"}</span>
+    <span class="desk-status">${unavailable ? "Until Aug" : reservation ? "Reserved" : "Available"}</span>
   `;
 
   return button;
@@ -171,11 +190,18 @@ function renderList() {
 function render() {
   const dayReservations = getDayReservations();
   const reservedCount = Object.keys(dayReservations).length;
+  const unavailableCount = Array.from(TEMPORARILY_UNAVAILABLE_DESKS).filter((deskId) => {
+    return isTemporarilyUnavailable(deskId) && !dayReservations[deskId];
+  }).length;
 
   els.mapDateLabel.textContent = `Availability for ${formatDisplayDate(state.selectedDate)}.`;
-  els.availableCount.textContent = DESK_COUNT - reservedCount;
-  els.reservedCount.textContent = reservedCount;
+  els.availableCount.textContent = DESK_COUNT - reservedCount - unavailableCount;
+  els.reservedCount.textContent = reservedCount + unavailableCount;
   els.selectedLabel.textContent = state.selectedDesk || "-";
+  els.emptyState.textContent =
+    unavailableCount > 0
+      ? `${unavailableCount} desks are unavailable until August. The remaining desks are available for this date.`
+      : "All 12 desks are available for the selected date.";
   els.deskGrid.innerHTML = "";
 
   for (let deskNumber = 1; deskNumber <= DESK_COUNT; deskNumber += 1) {

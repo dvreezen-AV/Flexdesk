@@ -8,6 +8,8 @@ const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, "data");
 const DATA_FILE = path.join(DATA_DIR, "reservations.json");
 const DESK_COUNT = 12;
+const UNAVAILABLE_UNTIL = "2026-08-01";
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 1", "Desk 2", "Desk 3", "Desk 4"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -51,6 +53,10 @@ function isValidDesk(value) {
   return Boolean(match);
 }
 
+function isTemporarilyUnavailable(deskId, date) {
+  return TEMPORARILY_UNAVAILABLE_DESKS.has(deskId) && date < UNAVAILABLE_UNTIL;
+}
+
 async function readJsonBody(req) {
   const chunks = [];
   for await (const chunk of req) {
@@ -88,6 +94,11 @@ async function handleApi(req, res, url) {
 
     if (!isValidDate(date) || !isValidDesk(deskId) || !name) {
       sendJson(res, 400, { error: "Date, desk, and name are required." });
+      return;
+    }
+
+    if (isTemporarilyUnavailable(deskId, date)) {
+      sendJson(res, 409, { error: `${deskId} is unavailable until 1 August.` });
       return;
     }
 
