@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lelystad Desk Reservations</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="Reservation overview">
+        <div>
+          <p class="eyebrow">Lelystad office</p>
+          <h1>Desk reservations</h1>
+        </div>
+        <div class="date-control">
+          <label for="booking-date">Reservation date</label>
+          <input id="booking-date" type="date" />
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Desk availability summary">
+        <article class="metric available">
+          <span class="metric-value" id="available-count">12</span>
+          <span class="metric-label">Available</span>
+        </article>
+        <article class="metric reserved">
+          <span class="metric-value" id="reserved-count">0</span>
+          <span class="metric-label">Reserved</span>
+        </article>
+        <article class="metric selected">
+          <span class="metric-value" id="selected-label">-</span>
+          <span class="metric-label">Selected desk</span>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <div class="floor-panel" aria-label="Desk map">
+          <div class="floor-header">
+            <div>
+              <h2>Office desk map</h2>
+              <p id="map-date-label">Choose a date to view availability.</p>
+            </div>
+            <div class="legend" aria-label="Legend">
+              <span><i class="dot dot-free"></i>Available</span>
+              <span><i class="dot dot-reserved"></i>Reserved</span>
+              <span><i class="dot dot-current"></i>Selected</span>
+            </div>
+          </div>
+
+          <div class="office-plan">
+            <img
+              class="floor-plan-image"
+              src="assets/floor-plan.png"
+              alt="Lelystad office floor plan"
+            />
+            <div class="desk-grid" id="desk-grid" role="list"></div>
+          </div>
+        </div>
+
+        <aside class="reservation-panel" aria-label="Reservation details">
+          <div class="panel-section">
+            <h2 id="form-title">Reserve a desk</h2>
+            <p id="form-helper">No desk selected.</p>
+          </div>
+
+          <form id="reservation-form" class="reservation-form">
+            <input id="desk-id" name="deskId" type="hidden" />
+
+            <label>
+              Your name
+              <input id="person-name" name="personName" autocomplete="name" required />
+            </label>
+
+            <label>
+              Team or department
+              <input id="team-name" name="teamName" autocomplete="organization" placeholder="Optional" />
+            </label>
+
+            <label>
+              Time
+              <select id="time-slot" name="timeSlot">
+                <option>Full day</option>
+                <option>Morning</option>
+                <option>Afternoon</option>
+              </select>
+            </label>
+
+            <button class="primary-button" type="submit" id="reserve-button" disabled>
+              Reserve desk
+            </button>
+          </form>
+
+          <div class="booking-details" id="booking-details" hidden>
+            <h3>Current reservation</h3>
+            <dl>
+              <div>
+                <dt>Name</dt>
+                <dd id="detail-name"></dd>
+              </div>
+              <div>
+                <dt>Team</dt>
+                <dd id="detail-team"></dd>
+              </div>
+              <div>
+                <dt>Time</dt>
+                <dd id="detail-time"></dd>
+              </div>
+            </dl>
+            <button class="secondary-button" type="button" id="cancel-button">Cancel reservation</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="reservation-list" aria-label="Reservations for selected date">
+        <div class="list-header">
+          <h2>Reservations for this date</h2>
+          <button class="text-button" type="button" id="clear-demo">Clear all</button>
+        </div>
+        <div id="empty-state" class="empty-state">
+          All 12 desks are available for the selected date.
+        </div>
+        <div id="reservation-items" class="reservation-items"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
