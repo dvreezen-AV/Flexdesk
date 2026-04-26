@@ -10,23 +10,30 @@ node server.js
 
 Open http://127.0.0.1:4173.
 
-## Deploy Online
+## Deploy Online With Render
 
-The app stores reservations in `reservations.json`. On a hosting platform, set these environment variables:
+This repo includes `render.yaml`, so Render can create the web service and persistent disk for you.
 
-```sh
-HOST=0.0.0.0
-DATA_DIR=/var/data
-```
+1. Push this folder to GitHub.
+2. In Render, choose **New +** > **Blueprint**.
+3. Connect the GitHub repo.
+4. Render reads `render.yaml` and creates the service.
+5. Deploy it.
 
-Then attach persistent storage at `/var/data`, so reservations survive restarts and redeploys.
+The app stores reservations in `/var/data/reservations.json` on Render. That path is backed by a persistent disk, so reservations survive restarts and redeploys.
 
-Use this start command:
+Important: Render persistent disks require a paid instance type. The included blueprint uses `plan: starter` for that reason.
 
-```sh
-node server.js
-```
+## Manual Render Settings
 
-## Good Hosting Fit
+If you do not use the blueprint, create a Node web service with:
 
-For a small internal team app, use a Node web service with persistent storage. Render, Railway, and Fly.io can all work. If using Render, create a Web Service and add a persistent disk mounted at `/var/data`. If using Railway or Fly.io, create a volume mounted at `/var/data`.
+- Build command: `npm install`
+- Start command: `node server.js`
+- Health check path: `/healthz`
+- Environment variables:
+  - `HOST=0.0.0.0`
+  - `DATA_DIR=/var/data`
+- Persistent disk:
+  - Mount path: `/var/data`
+  - Size: `1 GB`
