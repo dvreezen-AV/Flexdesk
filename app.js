@@ -14,7 +14,7 @@ const DESK_POSITIONS = [
   { left: 84.3, top: 67.1 },
 ];
 const UNAVAILABLE_UNTIL = "2026-08-01";
-const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 1", "Desk 2", "Desk 3", "Desk 4"]);
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 9", "Desk 10", "Desk 11", "Desk 12"]);
 
 const state = {
   selectedDate: "",

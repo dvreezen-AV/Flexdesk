@@ -9,7 +9,7 @@ const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, "data");
 const DATA_FILE = path.join(DATA_DIR, "reservations.json");
 const DESK_COUNT = 12;
 const UNAVAILABLE_UNTIL = "2026-08-01";
-const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 1", "Desk 2", "Desk 3", "Desk 4"]);
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 9", "Desk 10", "Desk 11", "Desk 12"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
