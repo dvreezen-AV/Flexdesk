@@ -5,11 +5,14 @@ const path = require("path");
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || "127.0.0.1";
 const ROOT = __dirname;
-const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, "data");
-const DATA_FILE = path.join(DATA_DIR, "reservations.json");
+const DEFAULT_DATA_DIR = path.join(ROOT, "data");
+const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
 const DESK_COUNT = 12;
 const UNAVAILABLE_UNTIL = "2026-08-01";
 const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 9", "Desk 10", "Desk 11", "Desk 12"]);
+
+let activeDataDir = CONFIGURED_DATA_DIR;
+let activeDataFile = path.join(activeDataDir, "reservations.json");
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -20,23 +23,41 @@ const mimeTypes = {
 };
 
 async function ensureStore() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
   try {
-    await fs.access(DATA_FILE);
+    await prepareStore(activeDataDir);
+  } catch (error) {
+    if (activeDataDir === DEFAULT_DATA_DIR) {
+      throw error;
+    }
+
+    console.warn(
+      `Could not use DATA_DIR=${activeDataDir}; falling back to ${DEFAULT_DATA_DIR}. ${error.message}`
+    );
+    activeDataDir = DEFAULT_DATA_DIR;
+    activeDataFile = path.join(activeDataDir, "reservations.json");
+    await prepareStore(activeDataDir);
+  }
+}
+
+async function prepareStore(dataDir) {
+  const dataFile = path.join(dataDir, "reservations.json");
+  await fs.mkdir(dataDir, { recursive: true });
+  try {
+    await fs.access(dataFile);
   } catch {
-    await fs.writeFile(DATA_FILE, "{}\n");
+    await fs.writeFile(dataFile, "{}\n");
   }
 }
 
 async function readStore() {
   await ensureStore();
-  const raw = await fs.readFile(DATA_FILE, "utf8");
+  const raw = await fs.readFile(activeDataFile, "utf8");
   return JSON.parse(raw || "{}");
 }
 
 async function writeStore(store) {
   await ensureStore();
-  await fs.writeFile(DATA_FILE, `${JSON.stringify(store, null, 2)}\n`);
+  await fs.writeFile(activeDataFile, `${JSON.stringify(store, null, 2)}\n`);
 }
 
 function sendJson(res, status, body) {
