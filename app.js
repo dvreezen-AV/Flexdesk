@@ -59,6 +59,7 @@ const els = {
   selectedLabel: document.querySelector("#selected-label"),
   form: document.querySelector("#reservation-form"),
   deskId: document.querySelector("#desk-id"),
+  deskChoice: document.querySelector("#desk-choice"),
   personName: document.querySelector("#person-name"),
   teamName: document.querySelector("#team-name"),
   timeSlot: document.querySelector("#time-slot"),
@@ -106,9 +107,25 @@ function getAssignedPerson(deskId) {
   return ASSIGNED_DESKS[deskId] || null;
 }
 
+function getDeskStatusLabel(deskId) {
+  const assignedPerson = getAssignedPerson(deskId);
+  const reservation = getReservation(deskId);
+
+  if (assignedPerson) {
+    return `Assigned to ${assignedPerson}`;
+  }
+
+  if (reservation) {
+    return `Reserved by ${reservation.name}`;
+  }
+
+  return "Available";
+}
+
 function resetSelection() {
   state.selectedDesk = null;
   els.form.reset();
+  els.deskChoice.value = "";
   els.reserveButton.disabled = true;
   els.formTitle.textContent = "Reserve a desk";
   els.formHelper.textContent = "No desk selected.";
@@ -122,6 +139,7 @@ function selectDesk(deskId) {
 
   els.selectedLabel.textContent = deskId;
   els.deskId.value = deskId;
+  els.deskChoice.value = deskId;
   els.reserveButton.disabled = Boolean(reservation) || Boolean(assignedPerson);
   els.formTitle.textContent = assignedPerson
     ? `${deskId} is assigned`
@@ -249,6 +267,20 @@ function renderOfficeTabs() {
   });
 }
 
+function renderDeskChoices() {
+  const currentValue = state.selectedDesk || "";
+  els.deskChoice.innerHTML = '<option value="">Select a desk</option>';
+
+  getDeskIdsForOffice().forEach((deskId) => {
+    const option = document.createElement("option");
+    option.value = deskId;
+    option.textContent = `${deskId} - ${getDeskStatusLabel(deskId)}`;
+    els.deskChoice.append(option);
+  });
+
+  els.deskChoice.value = currentValue;
+}
+
 function render() {
   const office = OFFICES[state.selectedOffice];
   const officeDeskIds = getDeskIdsForOffice();
@@ -258,6 +290,7 @@ function render() {
   const availableCount = officeDeskIds.length - reservedCount - assignedCount;
 
   renderOfficeTabs();
+  renderDeskChoices();
   els.mapDateLabel.textContent = `${office.name} availability for ${formatDisplayDate(state.selectedDate)}.`;
   els.availableCount.textContent = availableCount;
   els.reservedCount.textContent = reservedCount + assignedCount;
@@ -292,6 +325,16 @@ els.officeTabs.forEach((tab) => {
     resetSelection();
     render();
   });
+});
+
+els.deskChoice.addEventListener("change", () => {
+  if (els.deskChoice.value) {
+    selectDesk(els.deskChoice.value);
+    return;
+  }
+
+  resetSelection();
+  render();
 });
 
 els.dateInput.addEventListener("change", async () => {
