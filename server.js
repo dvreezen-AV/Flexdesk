@@ -33,6 +33,8 @@ const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 4": "Arjan",
   "Desk 8": "Erick",
+  "Desk 9": "Rowan",
+  "Desk 10": "Anniek",
 };
 
 let activeDataDir = CONFIGURED_DATA_DIR;
