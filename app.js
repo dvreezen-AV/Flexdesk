@@ -30,6 +30,8 @@ const ASSIGNED_DESKS = {
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
 };
+const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
 
 const state = {
   selectedDate: "",
@@ -90,12 +92,20 @@ function getAssignedPerson(deskId) {
   return ASSIGNED_DESKS[deskId] || null;
 }
 
+function isTemporarilyUnavailable(deskId) {
+  return TEMPORARILY_UNAVAILABLE_DESKS.has(deskId) && state.selectedDate < TEMPORARILY_UNAVAILABLE_UNTIL;
+}
+
 function getDeskStatusLabel(deskId) {
   const assignedPerson = getAssignedPerson(deskId);
   const reservation = getReservation(deskId);
 
   if (assignedPerson) {
     return `Assigned to ${assignedPerson}`;
+  }
+
+  if (isTemporarilyUnavailable(deskId)) {
+    return "Available from 21 May";
   }
 
   if (reservation) {
@@ -119,28 +129,41 @@ function selectDesk(deskId) {
   state.selectedDesk = deskId;
   const reservation = getReservation(deskId);
   const assignedPerson = getAssignedPerson(deskId);
+  const temporarilyUnavailable = isTemporarilyUnavailable(deskId);
 
   els.selectedLabel.textContent = deskId;
   els.deskId.value = deskId;
   els.deskChoice.value = deskId;
-  els.reserveButton.disabled = Boolean(reservation) || Boolean(assignedPerson);
+  els.reserveButton.disabled = Boolean(reservation) || Boolean(assignedPerson) || temporarilyUnavailable;
   els.formTitle.textContent = assignedPerson
     ? `${deskId} is assigned`
+    : temporarilyUnavailable
+      ? `${deskId} is unavailable`
     : reservation
       ? `${deskId} is reserved`
       : `Reserve ${deskId}`;
   els.formHelper.textContent = assignedPerson
     ? `Assigned to ${assignedPerson}.`
+    : temporarilyUnavailable
+      ? "Available from 21 May."
     : reservation
       ? "Current booking."
       : "Reservation details.";
 
-  if (assignedPerson || reservation) {
-    els.detailName.textContent = assignedPerson || reservation.name;
-    els.detailTeam.textContent = assignedPerson ? "Assigned desk" : reservation.team || "Not specified";
-    els.detailTime.textContent = assignedPerson ? "Always" : reservation.time;
+  if (assignedPerson || temporarilyUnavailable || reservation) {
+    els.detailName.textContent = assignedPerson || (temporarilyUnavailable ? "Available from 21 May" : reservation.name);
+    els.detailTeam.textContent = assignedPerson
+      ? "Assigned desk"
+      : temporarilyUnavailable
+        ? "Temporarily unavailable"
+        : reservation.team || "Not specified";
+    els.detailTime.textContent = assignedPerson
+      ? "Always"
+      : temporarilyUnavailable
+        ? "Until 21 May"
+        : reservation.time;
     els.bookingDetails.hidden = false;
-    els.cancelButton.hidden = Boolean(assignedPerson);
+    els.cancelButton.hidden = Boolean(assignedPerson) || temporarilyUnavailable;
   } else {
     els.bookingDetails.hidden = true;
     els.cancelButton.hidden = false;
@@ -175,6 +198,7 @@ function renderDesk(deskId) {
   const desk = DESKS[deskId];
   const reservation = getReservation(deskId);
   const assignedPerson = getAssignedPerson(deskId);
+  const temporarilyUnavailable = isTemporarilyUnavailable(deskId);
   const isSelected = state.selectedDesk === deskId;
   const button = document.createElement("button");
   const deskNumber = deskId.replace("Desk ", "");
@@ -183,7 +207,7 @@ function renderDesk(deskId) {
   button.className = [
     "desk",
     reservation ? "is-reserved" : "",
-    assignedPerson ? "is-unavailable" : "",
+    assignedPerson || temporarilyUnavailable ? "is-unavailable" : "",
     isSelected ? "is-selected" : "",
   ]
     .filter(Boolean)
@@ -195,6 +219,8 @@ function renderDesk(deskId) {
     "aria-label",
     assignedPerson
       ? `${deskId}, assigned to ${assignedPerson}`
+      : temporarilyUnavailable
+        ? `${deskId}, available from 21 May`
       : reservation
         ? `${deskId}, reserved by ${reservation.name}`
         : `${deskId}, available`
@@ -205,7 +231,9 @@ function renderDesk(deskId) {
     <span class="desk-number">${deskNumber}</span>
     ${assignedPerson ? `<span class="desk-person">${escapeHtml(assignedPerson)}</span>` : ""}
     ${reservation ? `<span class="desk-person">${escapeHtml(reservation.name)}</span>` : ""}
-    <span class="desk-status">${assignedPerson ? "Assigned" : reservation ? "Reserved" : "Available"}</span>
+    <span class="desk-status">${
+      assignedPerson ? "Assigned" : temporarilyUnavailable ? "From 21 May" : reservation ? "Reserved" : "Available"
+    }</span>
   `;
 
   return button;
@@ -216,10 +244,13 @@ function renderList() {
   const assignedRows = DESK_IDS
     .filter((deskId) => getAssignedPerson(deskId))
     .map((deskId) => [deskId, { name: getAssignedPerson(deskId), team: "Assigned desk", time: "Always" }]);
+  const temporarilyUnavailableRows = DESK_IDS
+    .filter((deskId) => isTemporarilyUnavailable(deskId))
+    .map((deskId) => [deskId, { name: "Available from 21 May", team: "Temporarily unavailable", time: "Until 21 May" }]);
   const reservationRows = Object.entries(dayReservations).filter(([deskId]) => {
-    return DESK_IDS.includes(deskId) && !getAssignedPerson(deskId);
+    return DESK_IDS.includes(deskId) && !getAssignedPerson(deskId) && !isTemporarilyUnavailable(deskId);
   });
-  const rows = [...assignedRows, ...reservationRows].sort(([a], [b]) => {
+  const rows = [...assignedRows, ...temporarilyUnavailableRows, ...reservationRows].sort(([a], [b]) => {
     return Number(a.replace("Desk ", "")) - Number(b.replace("Desk ", ""));
   });
 
@@ -257,14 +288,17 @@ function renderDeskChoices() {
 
 function render() {
   const dayReservations = getDayReservations();
-  const reservedCount = DESK_IDS.filter((deskId) => dayReservations[deskId]).length;
+  const reservedCount = DESK_IDS.filter((deskId) => {
+    return dayReservations[deskId] && !getAssignedPerson(deskId) && !isTemporarilyUnavailable(deskId);
+  }).length;
   const assignedCount = DESK_IDS.filter((deskId) => getAssignedPerson(deskId)).length;
-  const availableCount = DESK_IDS.length - reservedCount - assignedCount;
+  const temporarilyUnavailableCount = DESK_IDS.filter((deskId) => isTemporarilyUnavailable(deskId)).length;
+  const availableCount = DESK_IDS.length - reservedCount - assignedCount - temporarilyUnavailableCount;
 
   renderDeskChoices();
   els.mapDateLabel.textContent = `Availability for ${formatDisplayDate(state.selectedDate)}.`;
   els.availableCount.textContent = availableCount;
-  els.reservedCount.textContent = reservedCount + assignedCount;
+  els.reservedCount.textContent = reservedCount + assignedCount + temporarilyUnavailableCount;
   els.selectedLabel.textContent = state.selectedDesk || "-";
   els.reservationListTitle.textContent = "Reservations for this date";
   els.emptyState.textContent = `All ${DESK_IDS.length} desks are available for the selected date.`;
@@ -310,7 +344,12 @@ els.dateInput.addEventListener("change", async () => {
 els.form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  if (!state.selectedDesk || getReservation(state.selectedDesk) || getAssignedPerson(state.selectedDesk)) {
+  if (
+    !state.selectedDesk ||
+    getReservation(state.selectedDesk) ||
+    getAssignedPerson(state.selectedDesk) ||
+    isTemporarilyUnavailable(state.selectedDesk)
+  ) {
     return;
   }
 

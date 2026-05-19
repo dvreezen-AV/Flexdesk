@@ -37,6 +37,8 @@ const ASSIGNED_DESKS = {
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
 };
+const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
 
 let activeDataDir = CONFIGURED_DATA_DIR;
 let activeDataFile = path.join(activeDataDir, "reservations.json");
@@ -104,6 +106,10 @@ function getAssignedPerson(deskId) {
   return ASSIGNED_DESKS[deskId] || null;
 }
 
+function isTemporarilyUnavailable(deskId, date) {
+  return TEMPORARILY_UNAVAILABLE_DESKS.has(deskId) && date < TEMPORARILY_UNAVAILABLE_UNTIL;
+}
+
 async function readJsonBody(req) {
   const chunks = [];
   for await (const chunk of req) {
@@ -163,6 +169,11 @@ async function handleApi(req, res, url) {
     const assignedPerson = getAssignedPerson(deskId);
     if (assignedPerson) {
       sendJson(res, 409, { error: `${deskId} is assigned to ${assignedPerson}.` });
+      return;
+    }
+
+    if (isTemporarilyUnavailable(deskId, date)) {
+      sendJson(res, 409, { error: `${deskId} is available from 21 May.` });
       return;
     }
 
