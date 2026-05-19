@@ -16,6 +16,7 @@ const VALID_DESKS = new Set([
   "Desk 6",
   "Desk 7",
   "Desk 8",
+  "Desk 9",
   "Desk 10",
   "Desk 11",
   "Desk 12",
@@ -27,14 +28,11 @@ const VALID_DESKS = new Set([
   "Desk 18",
   "Desk 19",
   "Desk 20",
-  "Desk 21",
 ]);
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 4": "Arjan",
   "Desk 8": "Erick",
-  "Desk 10": "Rowan",
-  "Desk 11": "Anniek",
 };
 
 let activeDataDir = CONFIGURED_DATA_DIR;
