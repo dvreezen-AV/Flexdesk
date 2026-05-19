@@ -1,15 +1,4 @@
-const OFFICES = {
-  "office-1": {
-    name: "Office 1",
-    team: "Planning / Logistics / misc",
-    desks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  },
-  "office-2": {
-    name: "Office 2",
-    team: "PM / Sales / Misc",
-    desks: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-  },
-};
+const DESK_IDS = Array.from({ length: 20 }, (_, index) => `Desk ${index + 1}`);
 
 const DESKS = {
   "Desk 1": { office: "office-1", left: 5.2, top: 71.8 },
@@ -44,14 +33,12 @@ const ASSIGNED_DESKS = {
 
 const state = {
   selectedDate: "",
-  selectedOffice: "office-1",
   selectedDesk: null,
   reservations: {},
 };
 
 const els = {
   dateInput: document.querySelector("#booking-date"),
-  officeTabs: document.querySelectorAll(".office-tab"),
   mapDateLabel: document.querySelector("#map-date-label"),
   deskGrid: document.querySelector("#desk-grid"),
   availableCount: document.querySelector("#available-count"),
@@ -89,10 +76,6 @@ function formatDisplayDate(dateString) {
     month: "long",
     year: "numeric",
   }).format(new Date(`${dateString}T12:00:00`));
-}
-
-function getDeskIdsForOffice() {
-  return OFFICES[state.selectedOffice].desks.map((deskNumber) => `Desk ${deskNumber}`);
 }
 
 function getDayReservations() {
@@ -229,13 +212,12 @@ function renderDesk(deskId) {
 }
 
 function renderList() {
-  const officeDeskIds = getDeskIdsForOffice();
   const dayReservations = getDayReservations();
-  const assignedRows = officeDeskIds
+  const assignedRows = DESK_IDS
     .filter((deskId) => getAssignedPerson(deskId))
     .map((deskId) => [deskId, { name: getAssignedPerson(deskId), team: "Assigned desk", time: "Always" }]);
   const reservationRows = Object.entries(dayReservations).filter(([deskId]) => {
-    return officeDeskIds.includes(deskId) && !getAssignedPerson(deskId);
+    return DESK_IDS.includes(deskId) && !getAssignedPerson(deskId);
   });
   const rows = [...assignedRows, ...reservationRows].sort(([a], [b]) => {
     return Number(a.replace("Desk ", "")) - Number(b.replace("Desk ", ""));
@@ -259,19 +241,11 @@ function renderList() {
   });
 }
 
-function renderOfficeTabs() {
-  els.officeTabs.forEach((tab) => {
-    const active = tab.dataset.office === state.selectedOffice;
-    tab.classList.toggle("is-active", active);
-    tab.setAttribute("aria-pressed", String(active));
-  });
-}
-
 function renderDeskChoices() {
   const currentValue = state.selectedDesk || "";
   els.deskChoice.innerHTML = '<option value="">Select a desk</option>';
 
-  getDeskIdsForOffice().forEach((deskId) => {
+  DESK_IDS.forEach((deskId) => {
     const option = document.createElement("option");
     option.value = deskId;
     option.textContent = `${deskId} - ${getDeskStatusLabel(deskId)}`;
@@ -282,24 +256,21 @@ function renderDeskChoices() {
 }
 
 function render() {
-  const office = OFFICES[state.selectedOffice];
-  const officeDeskIds = getDeskIdsForOffice();
   const dayReservations = getDayReservations();
-  const reservedCount = officeDeskIds.filter((deskId) => dayReservations[deskId]).length;
-  const assignedCount = officeDeskIds.filter((deskId) => getAssignedPerson(deskId)).length;
-  const availableCount = officeDeskIds.length - reservedCount - assignedCount;
+  const reservedCount = DESK_IDS.filter((deskId) => dayReservations[deskId]).length;
+  const assignedCount = DESK_IDS.filter((deskId) => getAssignedPerson(deskId)).length;
+  const availableCount = DESK_IDS.length - reservedCount - assignedCount;
 
-  renderOfficeTabs();
   renderDeskChoices();
-  els.mapDateLabel.textContent = `${office.name} availability for ${formatDisplayDate(state.selectedDate)}.`;
+  els.mapDateLabel.textContent = `Availability for ${formatDisplayDate(state.selectedDate)}.`;
   els.availableCount.textContent = availableCount;
   els.reservedCount.textContent = reservedCount + assignedCount;
   els.selectedLabel.textContent = state.selectedDesk || "-";
-  els.reservationListTitle.textContent = `${office.name} reservations for this date`;
-  els.emptyState.textContent = `All ${officeDeskIds.length} desks in ${office.name} are available for the selected date.`;
+  els.reservationListTitle.textContent = "Reservations for this date";
+  els.emptyState.textContent = `All ${DESK_IDS.length} desks are available for the selected date.`;
   els.deskGrid.innerHTML = "";
 
-  officeDeskIds.forEach((deskId) => {
+  DESK_IDS.forEach((deskId) => {
     els.deskGrid.append(renderDesk(deskId));
   });
 
@@ -318,14 +289,6 @@ function escapeHtml(value) {
     return entities[char];
   });
 }
-
-els.officeTabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    state.selectedOffice = tab.dataset.office;
-    resetSelection();
-    render();
-  });
-});
 
 els.deskChoice.addEventListener("change", () => {
   if (els.deskChoice.value) {
@@ -397,9 +360,8 @@ els.cancelButton.addEventListener("click", async () => {
 
 els.clearDemo.addEventListener("click", async () => {
   const dayReservations = getDayReservations();
-  const officeDeskIds = getDeskIdsForOffice();
 
-  for (const deskId of officeDeskIds) {
+  for (const deskId of DESK_IDS) {
     if (dayReservations[deskId] && !getAssignedPerson(deskId)) {
       await apiRequest("/api/reservations", {
         method: "DELETE",
