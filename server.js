@@ -7,9 +7,35 @@ const HOST = process.env.HOST || "127.0.0.1";
 const ROOT = __dirname;
 const DEFAULT_DATA_DIR = path.join(ROOT, "data");
 const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
-const DESK_COUNT = 12;
-const UNAVAILABLE_UNTIL = "2026-08-01";
-const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 9", "Desk 10", "Desk 11", "Desk 12"]);
+const VALID_DESKS = new Set([
+  "Desk 1",
+  "Desk 2",
+  "Desk 3",
+  "Desk 4",
+  "Desk 5",
+  "Desk 6",
+  "Desk 7",
+  "Desk 8",
+  "Desk 10",
+  "Desk 11",
+  "Desk 12",
+  "Desk 13",
+  "Desk 14",
+  "Desk 15",
+  "Desk 16",
+  "Desk 17",
+  "Desk 18",
+  "Desk 19",
+  "Desk 20",
+  "Desk 21",
+]);
+const ASSIGNED_DESKS = {
+  "Desk 1": "Madrika",
+  "Desk 4": "Arjan",
+  "Desk 8": "Erick",
+  "Desk 10": "Rowan",
+  "Desk 11": "Anniek",
+};
 
 let activeDataDir = CONFIGURED_DATA_DIR;
 let activeDataFile = path.join(activeDataDir, "reservations.json");
@@ -70,12 +96,11 @@ function isValidDate(value) {
 }
 
 function isValidDesk(value) {
-  const match = /^Desk ([1-9]|1[0-2])$/.exec(value || "");
-  return Boolean(match);
+  return VALID_DESKS.has(value || "");
 }
 
-function isTemporarilyUnavailable(deskId, date) {
-  return TEMPORARILY_UNAVAILABLE_DESKS.has(deskId) && date < UNAVAILABLE_UNTIL;
+function getAssignedPerson(deskId) {
+  return ASSIGNED_DESKS[deskId] || null;
 }
 
 async function readJsonBody(req) {
@@ -118,8 +143,9 @@ async function handleApi(req, res, url) {
       return;
     }
 
-    if (isTemporarilyUnavailable(deskId, date)) {
-      sendJson(res, 409, { error: `${deskId} is unavailable until 1 August.` });
+    const assignedPerson = getAssignedPerson(deskId);
+    if (assignedPerson) {
+      sendJson(res, 409, { error: `${deskId} is assigned to ${assignedPerson}.` });
       return;
     }
 

@@ -50,6 +50,7 @@ button {
 }
 
 .topbar,
+.office-switcher,
 .summary-grid,
 .workspace,
 .reservation-list {
@@ -119,6 +120,40 @@ h3 {
 
 .date-control {
   min-width: 220px;
+}
+
+.office-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.office-tab {
+  display: grid;
+  min-height: 70px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.86);
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(26, 44, 38, 0.05);
+}
+
+.office-tab span {
+  font-size: 1.04rem;
+  font-weight: 850;
+}
+
+.office-tab small {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.office-tab.is-active {
+  border-color: rgba(36, 84, 198, 0.48);
+  background: var(--selected-soft);
+  box-shadow: 0 0 0 3px rgba(36, 84, 198, 0.12);
 }
 
 .summary-grid {
@@ -238,8 +273,8 @@ h3 {
 
 .office-plan {
   position: relative;
-  min-width: 760px;
-  aspect-ratio: 1712 / 954;
+  min-width: 1080px;
+  aspect-ratio: 1880 / 538;
   overflow: hidden;
   border: 2px solid #cfd9d3;
   border-radius: 8px;
@@ -263,8 +298,8 @@ h3 {
 .desk {
   position: absolute;
   display: grid;
-  width: 74px;
-  min-height: 50px;
+  width: 62px;
+  min-height: 44px;
   transform: translate(-50%, -50%);
   border: 2px solid rgba(47, 158, 112, 0.45);
   border-radius: 8px;
@@ -483,6 +518,7 @@ dd {
   }
 
   .topbar,
+  .office-switcher,
   .summary-grid,
   .workspace,
   .reservation-list {
@@ -537,12 +573,12 @@ dd {
   }
 
   .office-plan {
-    min-width: 640px;
+    min-width: 940px;
   }
 
   .desk {
-    width: 58px;
-    min-height: 44px;
+    width: 54px;
+    min-height: 40px;
     padding: 5px;
   }
 

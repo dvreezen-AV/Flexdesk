@@ -19,9 +19,20 @@
         </div>
       </section>
 
+      <section class="office-switcher" aria-label="Office selection">
+        <button class="office-tab is-active" type="button" data-office="office-1">
+          <span>Office 1</span>
+          <small>Planning / Logistics / misc</small>
+        </button>
+        <button class="office-tab" type="button" data-office="office-2">
+          <span>Office 2</span>
+          <small>PM / Sales / Misc</small>
+        </button>
+      </section>
+
       <section class="summary-grid" aria-label="Desk availability summary">
         <article class="metric available">
-          <span class="metric-value" id="available-count">12</span>
+          <span class="metric-value" id="available-count">0</span>
           <span class="metric-label">Available</span>
         </article>
         <article class="metric reserved">
@@ -115,11 +126,11 @@
 
       <section class="reservation-list" aria-label="Reservations for selected date">
         <div class="list-header">
-          <h2>Reservations for this date</h2>
-          <button class="text-button" type="button" id="clear-demo">Clear all</button>
+          <h2 id="reservation-list-title">Reservations for this date</h2>
+          <button class="text-button" type="button" id="clear-demo">Clear office</button>
         </div>
         <div id="empty-state" class="empty-state">
-          All 12 desks are available for the selected date.
+          All desks are available for the selected date.
         </div>
         <div id="reservation-items" class="reservation-items"></div>
       </section>
