@@ -33,6 +33,7 @@ const VALID_DESKS = new Set([
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 4": "Arjan",
+  "Desk 6": "Jolle",
   "Desk 8": "Erick",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
