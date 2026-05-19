@@ -34,6 +34,20 @@ If you do not use the blueprint, create a Node web service with:
 - Environment variables:
   - `HOST=0.0.0.0`
   - `DATA_DIR=/var/data`
+  - `ADMIN_TOKEN=<choose-a-private-token>`
 - Persistent disk:
   - Mount path: `/var/data`
   - Size: `1 GB`
+
+## Clear All Reservations
+
+Assigned desks are controlled in code. Reservations are stored separately and can be cleared without changing assigned desks.
+
+Set an `ADMIN_TOKEN` environment variable in Render, then call:
+
+```sh
+curl -X POST "https://your-flexdesk-url.onrender.com/api/admin/clear" \
+  -H "Authorization: Bearer your-admin-token"
+```
+
+This clears all dated reservations from storage. Assigned desks remain blocked.

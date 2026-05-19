@@ -298,12 +298,12 @@ h3 {
 .desk {
   position: absolute;
   display: grid;
-  width: 62px;
-  min-height: 44px;
+  width: 44px;
+  min-height: 34px;
   transform: translate(-50%, -50%);
-  border: 2px solid rgba(47, 158, 112, 0.45);
-  border-radius: 8px;
-  padding: 6px 8px;
+  border: 1px solid rgba(47, 158, 112, 0.5);
+  border-radius: 6px;
+  padding: 3px 4px;
   color: var(--ink);
   background: rgba(228, 246, 238, 0.94);
   text-align: center;
@@ -342,22 +342,22 @@ h3 {
 }
 
 .desk-number {
-  font-size: 1rem;
+  font-size: 0.84rem;
   font-weight: 850;
 }
 
 .desk-status {
   align-self: end;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.55rem;
   font-weight: 800;
 }
 
 .desk-person {
-  margin-top: 2px;
+  margin-top: 1px;
   overflow: hidden;
   color: var(--ink);
-  font-size: 0.68rem;
+  font-size: 0.54rem;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -577,18 +577,18 @@ dd {
   }
 
   .desk {
-    width: 54px;
-    min-height: 40px;
-    padding: 5px;
+    width: 42px;
+    min-height: 32px;
+    padding: 3px;
   }
 
   .desk-number {
-    font-size: 0.88rem;
+    font-size: 0.8rem;
   }
 
   .desk-status,
   .desk-person {
-    font-size: 0.61rem;
+    font-size: 0.52rem;
   }
 
   .reservation-row {

@@ -7,6 +7,7 @@ const HOST = process.env.HOST || "127.0.0.1";
 const ROOT = __dirname;
 const DEFAULT_DATA_DIR = path.join(ROOT, "data");
 const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 const VALID_DESKS = new Set([
   "Desk 1",
   "Desk 2",
@@ -113,6 +114,22 @@ async function readJsonBody(req) {
 }
 
 async function handleApi(req, res, url) {
+  if (url.pathname === "/api/admin/clear") {
+    if (req.method !== "POST") {
+      sendJson(res, 405, { error: "Method not allowed" });
+      return;
+    }
+
+    if (!ADMIN_TOKEN || req.headers.authorization !== `Bearer ${ADMIN_TOKEN}`) {
+      sendJson(res, 401, { error: "Unauthorized" });
+      return;
+    }
+
+    await writeStore({});
+    sendJson(res, 200, { ok: true, reservations: {} });
+    return;
+  }
+
   if (url.pathname !== "/api/reservations") {
     sendJson(res, 404, { error: "Not found" });
     return;
