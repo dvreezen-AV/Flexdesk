@@ -247,13 +247,10 @@ function renderList() {
   const assignedRows = DESK_IDS
     .filter((deskId) => getAssignedPerson(deskId))
     .map((deskId) => [deskId, { name: getAssignedPerson(deskId), team: "Assigned desk", time: "Always" }]);
-  const temporarilyUnavailableRows = DESK_IDS
-    .filter((deskId) => isTemporarilyUnavailable(deskId))
-    .map((deskId) => [deskId, { name: "Available from 21 May", team: "Temporarily unavailable", time: "Until 21 May" }]);
   const reservationRows = Object.entries(dayReservations).filter(([deskId]) => {
     return DESK_IDS.includes(deskId) && !getAssignedPerson(deskId) && !isTemporarilyUnavailable(deskId);
   });
-  const rows = [...assignedRows, ...temporarilyUnavailableRows, ...reservationRows].sort(([a], [b]) => {
+  const rows = [...assignedRows, ...reservationRows].sort(([a], [b]) => {
     return Number(a.replace("Desk ", "")) - Number(b.replace("Desk ", ""));
   });
 
