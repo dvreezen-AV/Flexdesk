@@ -33,10 +33,12 @@ const VALID_DESKS = new Set([
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 4": "Arjan",
+  "Desk 5": "David van L.",
   "Desk 6": "Jolle",
   "Desk 8": "Erick",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
+  "Desk 18": "Jeroen HR",
 };
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
 const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
