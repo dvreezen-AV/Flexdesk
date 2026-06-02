@@ -32,6 +32,8 @@ const VALID_DESKS = new Set([
 ]);
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
+  "Desk 2": "Niels Koolen",
+  "Desk 3": "Baris Oyanay",
   "Desk 4": "Arjan",
   "Desk 5": "David van L.",
   "Desk 6": "Jolle",
