@@ -26,8 +26,7 @@ const DESKS = {
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
-  "Desk 3": "Nick Kelders",
-  "Desk 4": "Arjan",
+  "Desk 4": "Nick Kelders",
   "Desk 5": "Pieter Konst",
   "Desk 6": "Jolle",
   "Desk 8": "Erick",
@@ -212,7 +211,7 @@ function renderDesk(deskId) {
   button.type = "button";
   button.className = [
     "desk",
-    reservation ? "is-reserved" : "",
+    reservation && !assignedPerson ? "is-reserved" : "",
     assignedPerson || temporarilyUnavailable ? "is-unavailable" : "",
     isSelected ? "is-selected" : "",
   ]
@@ -236,7 +235,7 @@ function renderDesk(deskId) {
   button.innerHTML = `
     <span class="desk-number">${deskNumber}</span>
     ${assignedPerson ? `<span class="desk-person">${escapeHtml(assignedPerson)}</span>` : ""}
-    ${reservation ? `<span class="desk-person">${escapeHtml(reservation.name)}</span>` : ""}
+    ${reservation && !assignedPerson ? `<span class="desk-person">${escapeHtml(reservation.name)}</span>` : ""}
     <span class="desk-status">${
       assignedPerson ? "Assigned" : temporarilyUnavailable ? "From 21 May" : reservation ? "Reserved" : "Available"
     }</span>
