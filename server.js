@@ -33,6 +33,7 @@ const VALID_DESKS = new Set([
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
+  "Desk 3": "Ana Marval",
   "Desk 4": "Nick Kelders",
   "Desk 5": "Pieter Konst",
   "Desk 6": "Jolle",
@@ -41,6 +42,9 @@ const ASSIGNED_DESKS = {
   "Desk 10": "Anniek",
   "Desk 18": "Jeroen HR",
   "Desk 19": "Tim Fokker",
+};
+const SCHEDULED_ASSIGNED_DESKS = {
+  "Desk 20": { person: "Dennis Dijk", from: "2026-09-01" },
 };
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
 const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
@@ -107,7 +111,13 @@ function isValidDesk(value) {
   return VALID_DESKS.has(value || "");
 }
 
-function getAssignedPerson(deskId) {
+function getAssignedPerson(deskId, date) {
+  const scheduledAssignment = SCHEDULED_ASSIGNED_DESKS[deskId];
+
+  if (scheduledAssignment && date >= scheduledAssignment.from) {
+    return scheduledAssignment.person;
+  }
+
   return ASSIGNED_DESKS[deskId] || null;
 }
 
@@ -171,7 +181,7 @@ async function handleApi(req, res, url) {
       return;
     }
 
-    const assignedPerson = getAssignedPerson(deskId);
+    const assignedPerson = getAssignedPerson(deskId, date);
     if (assignedPerson) {
       sendJson(res, 409, { error: `${deskId} is assigned to ${assignedPerson}.` });
       return;
