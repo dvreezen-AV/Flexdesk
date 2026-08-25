@@ -40,6 +40,7 @@ const ASSIGNED_DESKS = {
   "Desk 8": "Erick",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
+  "Desk 16": "Marco Blomsma",
   "Desk 18": "Jeroen HR",
   "Desk 19": "Tim Fokker",
 };
