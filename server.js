@@ -33,19 +33,26 @@ const VALID_DESKS = new Set([
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
-  "Desk 3": "Ana Marval",
-  "Desk 4": "Nick Kelders",
+  "Desk 3": "Nick Kelders",
+  "Desk 4": "Ana Marval",
   "Desk 5": "Pieter Konst",
-  "Desk 6": "Jolle",
-  "Desk 8": "Erick",
+  "Desk 6": "Jolle Schrale",
+  "Desk 7": "Erick/Chantal",
+  "Desk 8": "Nassim",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
+  "Desk 12": "David van Leijenhorst",
   "Desk 16": "Marco Blomsma",
   "Desk 18": "Jeroen HR",
   "Desk 19": "Tim Fokker",
 };
 const SCHEDULED_ASSIGNED_DESKS = {
   "Desk 20": { person: "Dennis Dijk", from: "2026-09-01" },
+};
+const ASSIGNED_DESK_AVAILABLE_DAYS = {
+  "Desk 5": [3],
+  "Desk 6": [3, 4],
+  "Desk 20": [5],
 };
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
 const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
@@ -112,7 +119,17 @@ function isValidDesk(value) {
   return VALID_DESKS.has(value || "");
 }
 
+function getWeekday(dateString) {
+  return new Date(`${dateString}T12:00:00`).getDay();
+}
+
 function getAssignedPerson(deskId, date) {
+  const availableDays = ASSIGNED_DESK_AVAILABLE_DAYS[deskId];
+
+  if (availableDays && availableDays.includes(getWeekday(date))) {
+    return null;
+  }
+
   const scheduledAssignment = SCHEDULED_ASSIGNED_DESKS[deskId];
 
   if (scheduledAssignment && date >= scheduledAssignment.from) {
