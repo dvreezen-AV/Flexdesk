@@ -54,6 +54,9 @@ const ASSIGNED_DESK_AVAILABLE_DAYS = {
   "Desk 6": [3, 4],
   "Desk 20": [5],
 };
+const ASSIGNED_DESK_AVAILABLE_RANGES = {
+  "Desk 19": [{ from: "2026-09-07", until: "2026-09-25" }],
+};
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
 const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
 
@@ -124,6 +127,12 @@ function getWeekday(dateString) {
 }
 
 function getAssignedPerson(deskId, date) {
+  const availableRanges = ASSIGNED_DESK_AVAILABLE_RANGES[deskId] || [];
+
+  if (availableRanges.some((range) => date >= range.from && date <= range.until)) {
+    return null;
+  }
+
   const availableDays = ASSIGNED_DESK_AVAILABLE_DAYS[deskId];
 
   if (availableDays && availableDays.includes(getWeekday(date))) {
