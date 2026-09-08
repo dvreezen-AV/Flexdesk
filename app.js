@@ -27,19 +27,6 @@ const DESKS = {
   "Desk 24": { office: "office-2", left: 93.7, top: 43.5 },
 };
 
-const LEGACY_DESK_MIGRATIONS = {
-  "Desk 11": "Desk 13",
-  "Desk 12": "Desk 15",
-  "Desk 13": "Desk 16",
-  "Desk 14": "Desk 17",
-  "Desk 15": "Desk 18",
-  "Desk 16": "Desk 19",
-  "Desk 17": "Desk 20",
-  "Desk 18": "Desk 21",
-  "Desk 19": "Desk 22",
-  "Desk 20": "Desk 23",
-};
-
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
@@ -119,20 +106,6 @@ function formatDisplayDate(dateString) {
 
 function getDayReservations() {
   return state.reservations || {};
-}
-
-function migrateDayReservations(reservations) {
-  return Object.entries(reservations || {}).reduce((migrated, [deskId, reservation]) => {
-    const migratedDeskId = LEGACY_DESK_MIGRATIONS[deskId] || deskId;
-
-    if (migrated[migratedDeskId] && migratedDeskId !== deskId) {
-      migrated[deskId] = reservation;
-    } else {
-      migrated[migratedDeskId] = reservation;
-    }
-
-    return migrated;
-  }, {});
 }
 
 function getReservation(deskId) {
@@ -264,7 +237,7 @@ async function apiRequest(path, options = {}) {
 
 async function loadDayReservations() {
   const payload = await apiRequest(`/api/reservations?date=${state.selectedDate}`);
-  state.reservations = migrateDayReservations(payload.reservations);
+  state.reservations = payload.reservations;
 }
 
 function renderDesk(deskId) {

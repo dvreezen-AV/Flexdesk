@@ -10,18 +10,6 @@ const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 const RESERVATION_RESET_ID = "layout-24-clean-start-2026-09-08";
 const VALID_DESKS = new Set(Array.from({ length: 24 }, (_, index) => `Desk ${index + 1}`));
-const LEGACY_DESK_MIGRATIONS = {
-  "Desk 11": "Desk 13",
-  "Desk 12": "Desk 15",
-  "Desk 13": "Desk 16",
-  "Desk 14": "Desk 17",
-  "Desk 15": "Desk 18",
-  "Desk 16": "Desk 19",
-  "Desk 17": "Desk 20",
-  "Desk 18": "Desk 21",
-  "Desk 19": "Desk 22",
-  "Desk 20": "Desk 23",
-};
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
@@ -103,7 +91,7 @@ async function prepareStore(dataDir) {
 async function readStore() {
   await ensureStore();
   const raw = await fs.readFile(activeDataFile, "utf8");
-  return migrateReservationStore(JSON.parse(raw || "{}"));
+  return JSON.parse(raw || "{}");
 }
 
 async function writeStore(store) {
@@ -122,27 +110,6 @@ function isValidDate(value) {
 
 function isValidDesk(value) {
   return VALID_DESKS.has(value || "");
-}
-
-function migrateDayReservations(reservations) {
-  return Object.entries(reservations || {}).reduce((migrated, [deskId, reservation]) => {
-    const migratedDeskId = LEGACY_DESK_MIGRATIONS[deskId] || deskId;
-
-    if (migrated[migratedDeskId] && migratedDeskId !== deskId) {
-      migrated[deskId] = reservation;
-    } else {
-      migrated[migratedDeskId] = reservation;
-    }
-
-    return migrated;
-  }, {});
-}
-
-function migrateReservationStore(store) {
-  return Object.entries(store || {}).reduce((migratedStore, [date, reservations]) => {
-    migratedStore[date] = migrateDayReservations(reservations);
-    return migratedStore;
-  }, {});
 }
 
 function getWeekday(dateString) {
