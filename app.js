@@ -1,4 +1,4 @@
-const DESK_IDS = Array.from({ length: 20 }, (_, index) => `Desk ${index + 1}`);
+const DESK_IDS = Array.from({ length: 24 }, (_, index) => `Desk ${index + 1}`);
 
 const DESKS = {
   "Desk 1": { office: "office-1", left: 5.2, top: 71.8 },
@@ -11,16 +11,33 @@ const DESKS = {
   "Desk 8": { office: "office-1", left: 31.6, top: 48.8 },
   "Desk 9": { office: "office-1", left: 35.4, top: 71.8 },
   "Desk 10": { office: "office-1", left: 35.4, top: 48.8 },
-  "Desk 11": { office: "office-2", left: 51.7, top: 71.8 },
-  "Desk 12": { office: "office-2", left: 63.3, top: 71.8 },
-  "Desk 13": { office: "office-2", left: 63.3, top: 48.8 },
-  "Desk 14": { office: "office-2", left: 67.1, top: 71.8 },
-  "Desk 15": { office: "office-2", left: 67.1, top: 48.8 },
-  "Desk 16": { office: "office-2", left: 78.5, top: 71.8 },
-  "Desk 17": { office: "office-2", left: 78.5, top: 48.8 },
-  "Desk 18": { office: "office-2", left: 82.3, top: 71.8 },
-  "Desk 19": { office: "office-2", left: 82.3, top: 48.8 },
-  "Desk 20": { office: "office-2", left: 94.4, top: 71.8 },
+  "Desk 11": { office: "office-1", left: 47.4, top: 59.2 },
+  "Desk 12": { office: "office-1", left: 47.4, top: 35.5 },
+  "Desk 13": { office: "office-2", left: 51.9, top: 66.5 },
+  "Desk 14": { office: "office-2", left: 51.9, top: 43.5 },
+  "Desk 15": { office: "office-2", left: 62.5, top: 66.5 },
+  "Desk 16": { office: "office-2", left: 62.5, top: 43.5 },
+  "Desk 17": { office: "office-2", left: 66.5, top: 66.5 },
+  "Desk 18": { office: "office-2", left: 66.5, top: 43.5 },
+  "Desk 19": { office: "office-2", left: 78.0, top: 66.5 },
+  "Desk 20": { office: "office-2", left: 78.0, top: 43.5 },
+  "Desk 21": { office: "office-2", left: 82.1, top: 66.5 },
+  "Desk 22": { office: "office-2", left: 82.1, top: 43.5 },
+  "Desk 23": { office: "office-2", left: 93.7, top: 66.5 },
+  "Desk 24": { office: "office-2", left: 93.7, top: 43.5 },
+};
+
+const LEGACY_DESK_MIGRATIONS = {
+  "Desk 11": "Desk 13",
+  "Desk 12": "Desk 15",
+  "Desk 13": "Desk 16",
+  "Desk 14": "Desk 17",
+  "Desk 15": "Desk 18",
+  "Desk 16": "Desk 19",
+  "Desk 17": "Desk 20",
+  "Desk 18": "Desk 21",
+  "Desk 19": "Desk 22",
+  "Desk 20": "Desk 23",
 };
 
 const ASSIGNED_DESKS = {
@@ -34,24 +51,24 @@ const ASSIGNED_DESKS = {
   "Desk 8": "Nassim",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
-  "Desk 12": "David van Leijenhorst",
-  "Desk 16": "Marco Blomsma",
-  "Desk 18": "Jeroen HR",
-  "Desk 19": "Tim Fokker",
+  "Desk 15": "David van Leijenhorst",
+  "Desk 19": "Marco Blomsma",
+  "Desk 21": "Jeroen HR",
+  "Desk 22": "Tim Fokker",
 };
 const SCHEDULED_ASSIGNED_DESKS = {
-  "Desk 20": { person: "Dennis Dijk", from: "2026-09-01" },
+  "Desk 23": { person: "Dennis Dijk", from: "2026-09-01" },
 };
 const ASSIGNED_DESK_AVAILABLE_DAYS = {
   "Desk 5": [3],
   "Desk 6": [3, 4],
-  "Desk 20": [5],
+  "Desk 23": [5],
 };
 const ASSIGNED_DESK_AVAILABLE_RANGES = {
-  "Desk 19": [{ from: "2026-09-07", until: "2026-09-25" }],
+  "Desk 22": [{ from: "2026-09-07", until: "2026-09-25" }],
 };
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
-const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set([]);
 
 const state = {
   selectedDate: "",
@@ -102,6 +119,20 @@ function formatDisplayDate(dateString) {
 
 function getDayReservations() {
   return state.reservations || {};
+}
+
+function migrateDayReservations(reservations) {
+  return Object.entries(reservations || {}).reduce((migrated, [deskId, reservation]) => {
+    const migratedDeskId = LEGACY_DESK_MIGRATIONS[deskId] || deskId;
+
+    if (migrated[migratedDeskId] && migratedDeskId !== deskId) {
+      migrated[deskId] = reservation;
+    } else {
+      migrated[migratedDeskId] = reservation;
+    }
+
+    return migrated;
+  }, {});
 }
 
 function getReservation(deskId) {
@@ -233,7 +264,7 @@ async function apiRequest(path, options = {}) {
 
 async function loadDayReservations() {
   const payload = await apiRequest(`/api/reservations?date=${state.selectedDate}`);
-  state.reservations = payload.reservations;
+  state.reservations = migrateDayReservations(payload.reservations);
 }
 
 function renderDesk(deskId) {

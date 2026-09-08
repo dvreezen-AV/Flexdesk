@@ -8,28 +8,19 @@ const ROOT = __dirname;
 const DEFAULT_DATA_DIR = path.join(ROOT, "data");
 const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
-const VALID_DESKS = new Set([
-  "Desk 1",
-  "Desk 2",
-  "Desk 3",
-  "Desk 4",
-  "Desk 5",
-  "Desk 6",
-  "Desk 7",
-  "Desk 8",
-  "Desk 9",
-  "Desk 10",
-  "Desk 11",
-  "Desk 12",
-  "Desk 13",
-  "Desk 14",
-  "Desk 15",
-  "Desk 16",
-  "Desk 17",
-  "Desk 18",
-  "Desk 19",
-  "Desk 20",
-]);
+const VALID_DESKS = new Set(Array.from({ length: 24 }, (_, index) => `Desk ${index + 1}`));
+const LEGACY_DESK_MIGRATIONS = {
+  "Desk 11": "Desk 13",
+  "Desk 12": "Desk 15",
+  "Desk 13": "Desk 16",
+  "Desk 14": "Desk 17",
+  "Desk 15": "Desk 18",
+  "Desk 16": "Desk 19",
+  "Desk 17": "Desk 20",
+  "Desk 18": "Desk 21",
+  "Desk 19": "Desk 22",
+  "Desk 20": "Desk 23",
+};
 const ASSIGNED_DESKS = {
   "Desk 1": "Madrika",
   "Desk 2": "Niels Koolen",
@@ -41,24 +32,24 @@ const ASSIGNED_DESKS = {
   "Desk 8": "Nassim",
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
-  "Desk 12": "David van Leijenhorst",
-  "Desk 16": "Marco Blomsma",
-  "Desk 18": "Jeroen HR",
-  "Desk 19": "Tim Fokker",
+  "Desk 15": "David van Leijenhorst",
+  "Desk 19": "Marco Blomsma",
+  "Desk 21": "Jeroen HR",
+  "Desk 22": "Tim Fokker",
 };
 const SCHEDULED_ASSIGNED_DESKS = {
-  "Desk 20": { person: "Dennis Dijk", from: "2026-09-01" },
+  "Desk 23": { person: "Dennis Dijk", from: "2026-09-01" },
 };
 const ASSIGNED_DESK_AVAILABLE_DAYS = {
   "Desk 5": [3],
   "Desk 6": [3, 4],
-  "Desk 20": [5],
+  "Desk 23": [5],
 };
 const ASSIGNED_DESK_AVAILABLE_RANGES = {
-  "Desk 19": [{ from: "2026-09-07", until: "2026-09-25" }],
+  "Desk 22": [{ from: "2026-09-07", until: "2026-09-25" }],
 };
 const TEMPORARILY_UNAVAILABLE_UNTIL = "2026-05-21";
-const TEMPORARILY_UNAVAILABLE_DESKS = new Set(["Desk 11", "Desk 13", "Desk 15", "Desk 20"]);
+const TEMPORARILY_UNAVAILABLE_DESKS = new Set([]);
 
 let activeDataDir = CONFIGURED_DATA_DIR;
 let activeDataFile = path.join(activeDataDir, "reservations.json");
@@ -101,7 +92,7 @@ async function prepareStore(dataDir) {
 async function readStore() {
   await ensureStore();
   const raw = await fs.readFile(activeDataFile, "utf8");
-  return JSON.parse(raw || "{}");
+  return migrateReservationStore(JSON.parse(raw || "{}"));
 }
 
 async function writeStore(store) {
@@ -120,6 +111,27 @@ function isValidDate(value) {
 
 function isValidDesk(value) {
   return VALID_DESKS.has(value || "");
+}
+
+function migrateDayReservations(reservations) {
+  return Object.entries(reservations || {}).reduce((migrated, [deskId, reservation]) => {
+    const migratedDeskId = LEGACY_DESK_MIGRATIONS[deskId] || deskId;
+
+    if (migrated[migratedDeskId] && migratedDeskId !== deskId) {
+      migrated[deskId] = reservation;
+    } else {
+      migrated[migratedDeskId] = reservation;
+    }
+
+    return migrated;
+  }, {});
+}
+
+function migrateReservationStore(store) {
+  return Object.entries(store || {}).reduce((migratedStore, [date, reservations]) => {
+    migratedStore[date] = migrateDayReservations(reservations);
+    return migratedStore;
+  }, {});
 }
 
 function getWeekday(dateString) {
