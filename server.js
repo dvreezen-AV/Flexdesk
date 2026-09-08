@@ -8,6 +8,7 @@ const ROOT = __dirname;
 const DEFAULT_DATA_DIR = path.join(ROOT, "data");
 const CONFIGURED_DATA_DIR = process.env.DATA_DIR || DEFAULT_DATA_DIR;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const RESERVATION_RESET_ID = "layout-24-clean-start-2026-09-08";
 const VALID_DESKS = new Set(Array.from({ length: 24 }, (_, index) => `Desk ${index + 1}`));
 const LEGACY_DESK_MIGRATIONS = {
   "Desk 11": "Desk 13",
@@ -81,11 +82,21 @@ async function ensureStore() {
 
 async function prepareStore(dataDir) {
   const dataFile = path.join(dataDir, "reservations.json");
+  const resetMarkerFile = path.join(dataDir, `.reset-${RESERVATION_RESET_ID}`);
   await fs.mkdir(dataDir, { recursive: true });
+
   try {
     await fs.access(dataFile);
   } catch {
     await fs.writeFile(dataFile, "{}\n");
+  }
+
+  try {
+    await fs.access(resetMarkerFile);
+  } catch {
+    await fs.writeFile(dataFile, "{}\n");
+    await fs.writeFile(resetMarkerFile, `${new Date().toISOString()}\n`);
+    console.log(`Cleared existing reservations for ${RESERVATION_RESET_ID}.`);
   }
 }
 
