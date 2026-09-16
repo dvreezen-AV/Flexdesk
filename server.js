@@ -26,13 +26,10 @@ const ASSIGNED_DESKS = {
   "Desk 21": "Jeroen HR",
   "Desk 22": "Tim Fokker",
 };
-const SCHEDULED_ASSIGNED_DESKS = {
-  "Desk 23": { person: "Dennis Dijk", from: "2026-09-01" },
-};
+const SCHEDULED_ASSIGNED_DESKS = {};
 const ASSIGNED_DESK_AVAILABLE_DAYS = {
   "Desk 5": [3],
   "Desk 6": [3, 4],
-  "Desk 23": [5],
 };
 const ASSIGNED_DESK_AVAILABLE_RANGES = {
   "Desk 22": [{ from: "2026-09-07", until: "2026-09-25" }],
