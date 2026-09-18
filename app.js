@@ -39,6 +39,7 @@ const ASSIGNED_DESKS = {
   "Desk 9": "Rowan",
   "Desk 10": "Anniek",
   "Desk 15": "David van Leijenhorst",
+  "Desk 16": "Arie",
   "Desk 19": "Marco Blomsma",
   "Desk 21": "Jeroen HR",
   "Desk 22": "Tim Fokker",
